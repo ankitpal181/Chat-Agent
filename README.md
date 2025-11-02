@@ -4,13 +4,13 @@ Chat Agent: The Multi-Functional AI Assistant 🤖📰
     Chat Agent is a powerful, multi-module AI application built with Streamlit and LangChain (or similar
     LLM framework) that serves as both a versatile personal assistant and a comprehensive news analysis
     platform.
-
     The project is split into two distinct, runnable modules: a Chatbot for general tasks and a dedicated
     Newsbot for deep-dive news aggregation and summarization. It is designed to be accessible to
     everyone, providing advanced features like live chat streaming, file generation, and dynamic web
     search.
 
 ✨ Core Features
+
     1. Chat Agent Module (chat_screen.py)
         Live Streamed Responses: Chat messages are displayed token-by-token for a real-time, engaging
         experience.
@@ -38,6 +38,7 @@ Chat Agent: The Multi-Functional AI Assistant 🤖📰
         gathered source articles and using a secondary internet search if necessary.
 
 📦 Installation and Setup
+
     Prerequisites
         You must have Python 3.10 or higher installed.
 
@@ -151,22 +152,23 @@ Chat Agent: The Multi-Functional AI Assistant 🤖📰
                         Project Name: You can change the default project name (chatbot) if you prefer.
 
 ▶️ How to Run the Application
-The project is launched via Streamlit, running each of the two main modules separately.
 
-1. Running the Chat Agent
-This module provides the general-purpose chat, file generation, and search capabilities.
+    The project is launched via Streamlit, running each of the two main modules separately.
 
-Bash:
-    # Ensure you are in the folder containing the 'chat_agent/' directory
-    streamlit run frontend/chat_screen.py
+    1. Running the Chat Agent
+        This module provides the general-purpose chat, file generation, and search capabilities.
 
-2. Running the News Bot
-This module provides the headline fetching and deep news analysis capabilities.
+        Bash:
+            # Ensure you are in the folder containing the 'chat_agent/' directory
+            streamlit run frontend/chat_screen.py
 
-Bash:
-    # Ensure you are in the folder containing the 'chat_agent/' directory
-    streamlit run frontend/news_screen.py
+    2. Running the News Bot
+        This module provides the headline fetching and deep news analysis capabilities.
+
+        Bash:
+            # Ensure you are in the folder containing the 'chat_agent/' directory
+            streamlit run frontend/news_screen.py
 
 🤝 Contributing
-I welcome contributions! If you have suggestions, bug reports, or want to contribute code, please open
-an issue or a pull request.
+    I welcome contributions! If you have suggestions, bug reports, or want to contribute code, please open
+    an issue or a pull request.
