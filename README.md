@@ -158,14 +158,14 @@ This module provides the general-purpose chat, file generation, and search capab
 
 Bash:
     # Ensure you are in the folder containing the 'chat_agent/' directory
-    streamlit run chat_agent/frontend/chat_screen.py
+    streamlit run frontend/chat_screen.py
 
 2. Running the News Bot
 This module provides the headline fetching and deep news analysis capabilities.
 
 Bash:
     # Ensure you are in the folder containing the 'chat_agent/' directory
-    streamlit run chat_agent/frontend/news_screen.py
+    streamlit run frontend/news_screen.py
 
 🤝 Contributing
 I welcome contributions! If you have suggestions, bug reports, or want to contribute code, please open
