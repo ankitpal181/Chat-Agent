@@ -1,9 +1,11 @@
 Chat Agent: The Multi-Functional AI Assistant 🤖📰
 
 🚀 Project Overview
+
     Chat Agent is a powerful, multi-module AI application built with Streamlit and LangChain (or similar
     LLM framework) that serves as both a versatile personal assistant and a comprehensive news analysis
     platform.
+    
     The project is split into two distinct, runnable modules: a Chatbot for general tasks and a dedicated
     Newsbot for deep-dive news aggregation and summarization. It is designed to be accessible to
     everyone, providing advanced features like live chat streaming, file generation, and dynamic web
