@@ -1,0 +1,13 @@
+OPENAI_API_KEY = ""
+GOOGLE_API_KEY = ""
+LLM_MODEL_NAME = "gpt-4.1-mini"
+
+## DATABASE [leave unchanged if using sqlite or in-memory storage] ##
+POSTGRES_CONNECTION_URI = "" # If using postgres(must already have a running connection)
+MONGODB_CONNECTION_URI = "" # If using mongodb(must already have a running connection)
+
+## Uncomment these if you want to setup langsmith ##
+# LANGCHAIN_API_KEY = ""
+# LANGCHAIN_TRACING_V2 = "true"
+# LANGCHAIN_ENDPOINT = "https://api.smith.langchain.com"
+# LANGCHAIN_PROJECT = "chatbot"
