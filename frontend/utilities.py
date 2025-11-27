@@ -154,9 +154,7 @@ def publish_messages(
                         message_placeholder.markdown(full_response)
                     elif isinstance(message, ToolMessage) and "file_path" in message.content:
                         message_content = json.loads(message.content.replace("'", '"'))
-                        
                         _render_tool_message(message_content, index)
-                            )
                     
                     index += 1
                 
