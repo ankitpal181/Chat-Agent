@@ -58,47 +58,52 @@ tool_node = ToolNode(reporter_model.tools)
 
 def headlines_function(state: QueryState) -> dict:
     messages = state["messages"]
-    
-    if len(messages) and not isinstance(messages[0], SystemMessage):
-        system_prompt = SystemMessage(NEWSBOT_REPORTER_PROMPT)
-        messages.insert(0, system_prompt)
-
     headlines = reporter_model.model.invoke(messages)
     headlines_json = headlines.model_dump_json(indent = 2)
+
     return {"messages": [AIMessage(headlines_json)]}
 
 def stories_function(state: QueryState) -> dict:
     messages = state["messages"]
-
-    if len(messages) and not isinstance(messages[0], SystemMessage):
-        system_prompt = SystemMessage(NEWSBOT_JOURNALIST_PROMPT)
-        messages.insert(0, system_prompt)
-
     stories = journalist_model.model.invoke(messages)
     stories_json = stories.model_dump_json(indent = 2)
+
     return {"messages": [AIMessage(stories_json)]}
 
 def query_function(state: QueryState) -> dict:
     messages = state["messages"]
     queries = state.get("queries", [])
 
-    if len(messages) and not isinstance(messages[0], SystemMessage):
-        system_prompt = SystemMessage(NEWSBOT_ANCHOR_PROMPT)
-        messages.insert(0, system_prompt)
-
     if not queries or isinstance(messages[-1], HumanMessage):
         response = anchor_model.model.invoke(messages)
-        return {
-            "messages": [response],
-            "queries": [RemoveMessage(id=REMOVE_ALL_MESSAGES), messages[-1], response]
-        }
+        return {"messages": [response], "queries": [messages[-1], response]}
     else:
         response = anchor_model.model.invoke(queries)
         return {"queries": [response]}
 
-def router_function(state: QueryState) -> dict:
-    if state["segment"] == "summary" and isinstance(state["messages"][-1], ToolMessage):
-        state["queries"].append(state["messages"][-1])
+def perception_function(state: QueryState) -> dict:
+    messages = state["messages"]
+    queries = state.get("queries", [])
+    segment = state.get("segment", "")
+    system_prompt = None
+
+    if segment == "headlines":
+        system_prompt = SystemMessage(NEWSBOT_REPORTER_PROMPT)
+    elif segment == "stories":
+        system_prompt = SystemMessage(NEWSBOT_JOURNALIST_PROMPT)
+    elif segment == "summary":
+        system_prompt = SystemMessage(NEWSBOT_ANCHOR_PROMPT)
+        
+        if isinstance(messages[-1], ToolMessage):
+            state["queries"].append(messages[-1])
+        
+        if not queries or isinstance(messages[-1], HumanMessage):
+            state["queries"].append(RemoveMessage(id=REMOVE_ALL_MESSAGES))
+
+    if system_prompt:
+        if not messages or messages[0].content != system_prompt.content:
+            return {"messages": [system_prompt]}
+
     return state
 
 def select_segment_function(state: QueryState) -> str:
@@ -155,17 +160,17 @@ def custom_tool_node(state: QueryState) -> dict:
 # Graph
 graph = StateGraph(QueryState)
 
+graph.add_node("perception_node", perception_function)
 graph.add_node("headlines_node", headlines_function)
 graph.add_node("stories_node", stories_function)
 graph.add_node("query_node", query_function)
 graph.add_node("tools", custom_tool_node)
-graph.add_node("router_node", router_function)
 
-graph.add_edge(START, "router_node")
-graph.add_conditional_edges("router_node", select_segment_function)
+graph.add_edge(START, "perception_node")
+graph.add_conditional_edges("perception_node", select_segment_function)
 graph.add_conditional_edges("headlines_node", custom_tools_condition)
 graph.add_conditional_edges("stories_node", custom_tools_condition)
 graph.add_conditional_edges("query_node", custom_tools_condition)
-graph.add_edge("tools", "router_node")
+graph.add_edge("tools", "perception_node")
 
 newsbot = graph.compile(Storage("memory").storage)
