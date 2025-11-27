@@ -1,13 +1,13 @@
+# Load environment variables
 from dotenv import load_dotenv
+load_dotenv()
+
 from .storage import Storage
 from .schemas import QueryState
 from .operators import perception_function, headlines_function, stories_function, query_function, custom_tool_node
 from .utilities import select_segment_function, custom_tools_condition
 from langgraph.graph import StateGraph, START
 
-
-# Load environment variables
-load_dotenv()
 
 # Graph
 graph = StateGraph(QueryState)

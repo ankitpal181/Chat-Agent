@@ -62,7 +62,7 @@ def perception_function(state: QueryState) -> dict:
 
     if system_prompt:
         if not messages or messages[0].content != system_prompt.content:
-            return {"messages": [system_prompt]}
+            state["messages"].insert(0, system_prompt)
 
     return state
 
