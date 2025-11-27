@@ -6,7 +6,7 @@ This document outlines the **backend architecture** of the **Chat Agent**, focus
 *Modules that gather and interpret information from the environment.*
 
 *   **Perception Node**:
-    *   The system implements a dedicated **Perception Node** (`perception_function` in `backend/news_server.py`).
+    *   The system implements a dedicated **Perception Node** (`perception_function` in `backend/operators.py`).
     *   **Responsibility**: It acts as the single entry point for state analysis. It "perceives" the current environment—specifically the `segment` variable (Headlines, Stories, Summary) and the conversation history.
     *   **Action**:
         *   Based on this perception, it proactively injects the appropriate **System Message** (Persona) into the state *before* control is passed to the reasoning engines. This ensures that the execution nodes always receive a fully prepared, context-aware state.
@@ -16,7 +16,7 @@ This document outlines the **backend architecture** of the **Chat Agent**, focus
 *The "brain" of the agent, analyzing information and choosing actions.*
 
 *   **Reasoning Engines (Execution Nodes)**:
-    *   **News Bot**: The "thinking" is performed by specific **Execution Nodes** that utilize LLMs (`backend/llms.py`) to process information:
+    *   **News Bot**: The "thinking" is performed by specific **Execution Nodes** (`backend/operators.py`) that utilize LLMs to process information:
         *   **Headlines Node**: The **Reporter** persona reasons about raw search data to extract and format valid news.
         *   **Stories Node**: The **Journalist** persona reasons about which deep-dive stories are relevant to a selected headline.
         *   **Query Node**: The **Anchor** persona reasons about how to synthesize gathered information into a narrative or answer user follow-up questions.
@@ -27,7 +27,7 @@ This document outlines the **backend architecture** of the **Chat Agent**, focus
 *Maintaining context and learning from interactions.*
 
 *   **News Bot Memory (In-Memory)**:
-    *   The News Bot utilizes a **Dual-State Working Memory** that persists only for the duration of the graph execution (RAM):
+    *   The News Bot utilizes a **Dual-State Working Memory** (defined in `backend/schemas.py`) that persists only for the duration of the graph execution (RAM):
         *   **`messages` (Episodic Memory)**: Records the structural narrative of the main task (Headlines -> Stories -> Summary).
         *   **`queries` (Transient Memory)**: A scratchpad for immediate, low-stakes follow-up interactions. This memory is programmatically cleared (`RemoveMessage`) when a new summary is generated, ensuring the agent's focus remains on the current topic.
 *   **Chat Bot Memory (Persistent)**:
@@ -37,9 +37,9 @@ This document outlines the **backend architecture** of the **Chat Agent**, focus
 *Breaking down goals into manageable steps.*
 
 *   **Graph-Based Planning**:
-    *   The **Plan** is explicitly defined by the **Graph Structure** (`StateGraph`) and its edges.
-    *   **High-Level Planner**: The `select_segment_function` determines the *phase* of the operation, dictating the transition between Headlines, Stories, and Summary nodes.
-    *   **Reactive Planner**: The `custom_tools_condition` determines the immediate next step, deciding whether to execute an action (Tool) or complete the reasoning step.
+    *   The **Plan** is explicitly defined by the **Graph Structure** (`StateGraph`) in `backend/news_server.py`.
+    *   **High-Level Planner**: The `select_segment_function` (in `backend/utilities.py`) determines the *phase* of the operation, dictating the transition between Headlines, Stories, and Summary nodes.
+    *   **Reactive Planner**: The `custom_tools_condition` (in `backend/utilities.py`) determines the immediate next step, deciding whether to execute an action (Tool) or complete the reasoning step.
 *   **ReAct Pattern**:
     *   The Chat Bot employs a flexible **Reasoning + Acting** loop, planning one step at a time based on the immediate needs of the user request.
 

@@ -103,9 +103,15 @@ Once the application starts, your browser will open the Streamlit interface. Use
     *   `chat_screen.py`: UI logic for the Chatbot.
     *   `news_screen.py`: UI logic for the Newsbot.
 *   `backend/`: Contains the core logic.
-    *   `chat_server.py` & `news_server.py`: Agent logic and state management.
+    *   `chat_server.py`: Logic for the Chatbot.
+    *   `news_server.py`: Graph definition and assembly for the Newsbot.
+    *   `operators.py`: Core logic functions (Nodes) for the Newsbot.
+    *   `utilities.py`: Planning and routing logic (Edges) for the Newsbot.
+    *   `schemas.py`: Data models and state definitions.
     *   `llms.py`: LLM configuration (OpenAI/Gemini).
     *   `tools.py`: Implementation of tools (Search, PDF/CSV generation).
+    *   `storage.py`: Database configuration and management.
+    *   `prompts.py`: Prompt templates for the Newsbot.
 *   `chatbot.db`: Default SQLite database for storing conversation history.
 
 ## 🤝 Contributing
