@@ -162,5 +162,3 @@ def render_news():
             "summary_response": summary_response,
             "stories_summarized": stories_to_summarize,
         })
-
-        print(newsbot.get_state({"configurable": {"thread_id": 2}}).values.get("queries", []))

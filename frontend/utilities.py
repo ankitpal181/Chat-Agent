@@ -73,7 +73,7 @@ def publish_messages(
                         full_response += message.content
                         message_placeholder.markdown(full_response)
                     elif isinstance(message, ToolMessage) and "file_path" in message.content:
-                        message_content = json.loads(message.content)
+                        message_content = json.loads(message.content.replace("'", '"'))
 
                         with open(message_content["file_path"]) as file:
                             st.download_button(

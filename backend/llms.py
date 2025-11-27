@@ -8,6 +8,7 @@ from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
 class Model:
     def __init__(self, output_schema: BaseModel = None) -> None:
         self.tools = [search_internet, generate_csv_tool, generate_pdf_tool]
+        self.tools_by_name = {tool.name: tool for tool in self.tools}
 
         if os.environ.get("OPENAI_API_KEY"):
             self.model = self._set_openai_model(output_schema)
