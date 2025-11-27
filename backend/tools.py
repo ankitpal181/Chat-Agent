@@ -2,7 +2,7 @@ import pandas
 from weasyprint import HTML
 from .prompts import CSV_PROMPT, PDF_PROMPT
 from langchain_core.tools import StructuredTool
-from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults
 
 
 def generate_csv_file(data: dict) -> dict:
@@ -24,6 +24,6 @@ def generate_pdf_file(template: str) -> dict:
     }
 
 # Tools
-search_internet = DuckDuckGoSearchRun()
+search_internet = DuckDuckGoSearchResults()
 generate_csv_tool = StructuredTool.from_function(generate_csv_file, description = CSV_PROMPT)
 generate_pdf_tool = StructuredTool.from_function(generate_pdf_file, description = PDF_PROMPT)

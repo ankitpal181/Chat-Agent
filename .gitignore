@@ -1,3 +1,5 @@
 chatbot.db*
 .env
 __pycache__
+*.pdf
+*.csv
