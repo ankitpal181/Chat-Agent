@@ -3,6 +3,8 @@ from .schemas import QueryState
 
 
 # Graph Node Utilities(Planning Modules)
+
+# NewsBot Utilities
 def select_segment_function(state: QueryState) -> str:
     if "segment" in state:
         if state["segment"] == "headlines": return "headlines_node"
@@ -34,3 +36,23 @@ def custom_tools_condition(
         return "tools"
     
     return "__end__"
+
+# InterviewBot Utilities
+def interview_tools_condition(state: InterviewState, messages_key: str = "messages") -> str:
+    ai_message = None
+
+    if isinstance(state, list):
+        ai_message = state[-1]
+    elif isinstance(state, dict) and (messages := state.get(messages_key, [])) or (
+        messages := getattr(state, messages_key, [])
+    ):
+        ai_message = messages[-1]
+    else:
+        msg = f"No messages found in input state to tool_edge: {state}"
+        raise ValueError(msg)
+
+    if (hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0):
+        return "tools"
+    
+    return "answer_collection_node"
+

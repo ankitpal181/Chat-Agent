@@ -4,7 +4,7 @@ load_dotenv()
 
 from .storage import Storage
 from .schemas import QueryState
-from .operators import perception_function, headlines_function, stories_function, query_function, custom_tool_node
+from .operators import news_perception_function, headlines_function, stories_function, query_function, custom_tool_node
 from .utilities import select_segment_function, custom_tools_condition
 from langgraph.graph import StateGraph, START
 
@@ -13,7 +13,7 @@ from langgraph.graph import StateGraph, START
 graph = StateGraph(QueryState)
 
 # Graph Nodes
-graph.add_node("perception_node", perception_function)
+graph.add_node("perception_node", news_perception_function)
 graph.add_node("headlines_node", headlines_function)
 graph.add_node("stories_node", stories_function)
 graph.add_node("query_node", query_function)

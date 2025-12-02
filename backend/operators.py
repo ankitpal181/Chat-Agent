@@ -1,21 +1,28 @@
 import json
 from .llms import Model
-from .schemas import HeadlinesSchema, StoriesSchema, QueryState
+from .schemas import (
+    HeadlinesSchema, StoriesSchema, QueryState, InterviewState, QuestionsSchema, EvaluationSchema
+)
 from .prompts import NEWSBOT_ANCHOR_PROMPT, NEWSBOT_JOURNALIST_PROMPT, NEWSBOT_REPORTER_PROMPT
 from langchain_core.messages import AIMessage, SystemMessage, ToolMessage, HumanMessage, RemoveMessage
 from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 
 
-# AI instances
+# NewsBot AI instances
 reporter_model = Model(HeadlinesSchema)
 journalist_model = Model(StoriesSchema)
 anchor_model = Model()
+
+# InterviewBot AI instances
+questioner_model = Model(QuestionsSchema)
+evaluator_model = Model(EvaluationSchema)
 
 
 # Graph Node Operators/Functions
 tool_node = ToolNode(reporter_model.tools)
 
+# NewsBot Functions
 def headlines_function(state: QueryState) -> dict:
     messages = state["messages"]
     headlines = reporter_model.model.invoke(messages)
@@ -41,7 +48,7 @@ def query_function(state: QueryState) -> dict:
         response = anchor_model.model.invoke(queries)
         return {"queries": [response]}
 
-def perception_function(state: QueryState) -> dict:
+def news_perception_function(state: QueryState) -> dict:
     messages = state["messages"]
     queries = state.get("queries", [])
     segment = state.get("segment", "")
@@ -83,3 +90,33 @@ def custom_tool_node(state: QueryState) -> dict:
             return {"queries": tool_messages}
 
     return tool_node.invoke(state)
+
+
+# InterviewBot Functions
+def candidate_information_collection_function(state: InterviewState) -> dict:
+    return state
+
+def question_generation_function(state: InterviewState) -> dict:
+    messages = state["messages"]
+    stories = questioner_model.model.invoke(messages)
+    stories_json = stories.model_dump_json(indent = 2)
+
+    return {"messages": [AIMessage(stories_json)]}
+
+def answer_collection_function(state: InterviewState) -> dict:
+    return state
+
+def evaluation_function(state: InterviewState) -> dict:
+    messages = state["messages"]
+    evaluation = evaluator_model.model.invoke(messages)
+    evaluation_json = evaluation.model_dump_json(indent = 2)
+
+    return {"messages": [AIMessage(evaluation_json)]}
+
+def interview_perception_function(state: InterviewState) -> dict:
+    messages = state["messages"]
+    system_prompt = SystemMessage(INTERVIEW_STYLE_PROMPT)
+
+    if system_prompt: state["messages"].insert(0, system_prompt)
+
+    return state
