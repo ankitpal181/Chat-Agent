@@ -7,6 +7,7 @@ from .prompts import NEWSBOT_ANCHOR_PROMPT, NEWSBOT_JOURNALIST_PROMPT, NEWSBOT_R
 from langchain_core.messages import AIMessage, SystemMessage, ToolMessage, HumanMessage, RemoveMessage
 from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
+from langgraph.types import interrupt
 
 
 # NewsBot AI instances
@@ -17,10 +18,12 @@ anchor_model = Model()
 # InterviewBot AI instances
 questioner_model = Model(QuestionsSchema)
 evaluator_model = Model(EvaluationSchema)
+reporting_model = Model()
 
 
 # Graph Node Operators/Functions
 tool_node = ToolNode(reporter_model.tools)
+reporting_tool_node = ToolNode(reporting_model.tools)
 
 # NewsBot Functions
 def headlines_function(state: QueryState) -> dict:
@@ -96,7 +99,7 @@ def custom_tool_node(state: QueryState) -> dict:
 def candidate_information_collection_function(state: InterviewState) -> dict:
     user_name = interrupt("Please enetr your full name")
     user_desired_role = interrupt("Job role you want to interview for")
-    user_preferred_comapnies = interrupt("Please enetr comma seperated names of companies you prefer")
+    user_preferred_comapnies = interrupt("Please enter comma seperated names of companies you prefer")
     user_information = json.dumps({
         "name": user_name,
         "role": user_desired_role,
@@ -143,3 +146,12 @@ def interview_perception_function(state: InterviewState) -> dict:
     if system_prompt: state["messages"].insert(0, system_prompt)
 
     return state
+
+def phase_router_function(state: InterviewState) -> str:
+    if state.get("phase") == "execution": return "perception_node"
+    else: return "reporting_node"
+
+def reporting_function(state: InterviewState) -> dict:
+    messages = state["messages"]
+    response = reporting_model.model.invoke(messages)
+    return {"messages": [response]}

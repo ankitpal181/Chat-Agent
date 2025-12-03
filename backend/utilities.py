@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from .schemas import QueryState
+from .schemas import QueryState, InterviewState
 
 
 # Graph Node Utilities(Planning Modules)
@@ -52,7 +52,7 @@ def interview_tools_condition(state: InterviewState, messages_key: str = "messag
         raise ValueError(msg)
 
     if (hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0):
-        return "tools"
+        return "execution_tools"
     
     return "answer_collection_node"
 

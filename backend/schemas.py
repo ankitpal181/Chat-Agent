@@ -44,6 +44,7 @@ class InterviewState(TypedDict):
     questions: list
     answers: list
     rules: dict
+    phase: str
 
 class QuestionsItemSchema(BaseModel):
     question: str = Field(

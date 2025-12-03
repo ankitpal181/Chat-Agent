@@ -6,10 +6,12 @@ from .storage import Storage
 from .schemas import InterviewState
 from .operators import (
     interview_perception_function, candidate_information_collection_function, question_generation_function,
-    answer_collection_function, evaluation_function, tool_node
+    answer_collection_function, evaluation_function, tool_node, reporting_function, reporting_tool_node,
+    phase_router_function
 )
 from .utilities import interview_tools_condition
 from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import tools_condition
 
 
 # Graph
@@ -21,16 +23,22 @@ graph.add_node("candidate_information_collection_node", candidate_information_co
 graph.add_node("question_generation_node", question_generation_function)
 graph.add_node("answer_collection_node", answer_collection_function)
 graph.add_node("evaluation_node", evaluation_function)
-graph.add_node("tools", tool_node)
+graph.add_node("execution_tools", tool_node)
+graph.add_node("reporting_node", reporting_function)
+graph.add_node("tools", reporting_tool_node)
 
 # Graph Edges
 graph.add_edge(START, "candidate_information_collection_node")
-graph.add_edge("candidate_information_collection_node", "perception_node")
+graph.add_conditional_edges("candidate_information_collection_node", phase_router_function)
+# Segment 1
 graph.add_edge("perception_node", "question_generation_node")
 graph.add_conditional_edges("question_generation_node", interview_tools_condition)
-graph.add_edge("tools", "question_generation_node")
+graph.add_edge("execution_tools", "question_generation_node")
 graph.add_edge("answer_collection_node", "evaluation_node")
 graph.add_edge("evaluation_node", END)
+# Segment 2
+graph.add_conditional_edges("reporting_node", tools_condition)
+graph.add_edge("tools", "reporting_node")
 
 # Compile Graph
 interviewbot = graph.compile(Storage("memory").storage)
