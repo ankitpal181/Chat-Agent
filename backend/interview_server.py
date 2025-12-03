@@ -41,4 +41,4 @@ graph.add_conditional_edges("reporting_node", tools_condition)
 graph.add_edge("tools", "reporting_node")
 
 # Compile Graph
-interviewbot = graph.compile(Storage("memory").storage)
+interviewbot = graph.compile(Storage("database").storage)

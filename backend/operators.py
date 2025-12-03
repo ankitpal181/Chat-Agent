@@ -97,13 +97,13 @@ def custom_tool_node(state: QueryState) -> dict:
 
 # InterviewBot Functions
 def candidate_information_collection_function(state: InterviewState) -> dict:
-    user_name = interrupt("Please enetr your full name")
+    user_name = interrupt("Please enter your full name")
     user_desired_role = interrupt("Job role you want to interview for")
-    user_preferred_comapnies = interrupt("Please enter comma seperated names of companies you prefer")
+    user_preferred_companies = interrupt("Please enter comma separated names of companies you prefer")
     user_information = json.dumps({
         "name": user_name,
         "role": user_desired_role,
-        "companies": user_preferred_comapnies
+        "companies": user_preferred_companies
     })
 
     return {"messages": [HumanMessage(user_information)]}
