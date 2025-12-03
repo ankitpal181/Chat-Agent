@@ -41,8 +41,8 @@ class StoriesSchema(BaseModel):
 
 class InterviewState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
-    questions: Annotated[list[BaseMessage], add_messages]
-    answers: Annotated[list[BaseMessage], add_messages]
+    questions: list
+    answers: list
     rules: dict
 
 class QuestionsItemSchema(BaseModel):

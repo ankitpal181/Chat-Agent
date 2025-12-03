@@ -3,7 +3,7 @@ from .llms import Model
 from .schemas import (
     HeadlinesSchema, StoriesSchema, QueryState, InterviewState, QuestionsSchema, EvaluationSchema
 )
-from .prompts import NEWSBOT_ANCHOR_PROMPT, NEWSBOT_JOURNALIST_PROMPT, NEWSBOT_REPORTER_PROMPT
+from .prompts import NEWSBOT_ANCHOR_PROMPT, NEWSBOT_JOURNALIST_PROMPT, NEWSBOT_REPORTER_PROMPT, INTERVIEWBOT_PROMPT
 from langchain_core.messages import AIMessage, SystemMessage, ToolMessage, HumanMessage, RemoveMessage
 from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
@@ -94,17 +94,33 @@ def custom_tool_node(state: QueryState) -> dict:
 
 # InterviewBot Functions
 def candidate_information_collection_function(state: InterviewState) -> dict:
-    return state
+    user_name = interrupt("Please enetr your full name")
+    user_desired_role = interrupt("Job role you want to interview for")
+    user_preferred_comapnies = interrupt("Please enetr comma seperated names of companies you prefer")
+    user_information = json.dumps({
+        "name": user_name,
+        "role": user_desired_role,
+        "companies": user_preferred_comapnies
+    })
+
+    return {"messages": [HumanMessage(user_information)]}
 
 def question_generation_function(state: InterviewState) -> dict:
     messages = state["messages"]
-    stories = questioner_model.model.invoke(messages)
-    stories_json = stories.model_dump_json(indent = 2)
+    questions = questioner_model.model.invoke(messages)
+    questions_json = questions.model_dump_json(indent = 2)
 
-    return {"messages": [AIMessage(stories_json)]}
+    return {"messages": [AIMessage(questions_json)], "questions": questions.questions}
 
 def answer_collection_function(state: InterviewState) -> dict:
-    return state
+    questions = state["questions"]
+    answers = []
+
+    for question in questions:
+        answer = interrupt(question)
+        answers.append({"question": question.question, "answer": answer})
+    
+    return {"messages": [HumanMessage(json.dumps(answers))], "answers": answers}
 
 def evaluation_function(state: InterviewState) -> dict:
     messages = state["messages"]
@@ -115,7 +131,14 @@ def evaluation_function(state: InterviewState) -> dict:
 
 def interview_perception_function(state: InterviewState) -> dict:
     messages = state["messages"]
-    system_prompt = SystemMessage(INTERVIEW_STYLE_PROMPT)
+    rules = state.get("rules", {})
+    user_information = json.loads(messages[1].content)
+    system_prompt = SystemMessage(INTERVIEWBOT_PROMPT.format(
+        role=user_information["role"],
+        companies=user_information["companies"],
+        time_frame=rules.get("time_frame", "1 minute"),
+        no_of_questions=rules.get("no_of_questions", "5")
+    ))
 
     if system_prompt: state["messages"].insert(0, system_prompt)
 

@@ -24,9 +24,9 @@ graph.add_node("evaluation_node", evaluation_function)
 graph.add_node("tools", tool_node)
 
 # Graph Edges
-graph.add_edge(START, "perception_node")
-graph.add_edge("perception_node", "candidate_information_collection_node")
-graph.add_edge("candidate_information_collection_node", "question_generation_node")
+graph.add_edge(START, "candidate_information_collection_node")
+graph.add_edge("candidate_information_collection_node", "perception_node")
+graph.add_edge("perception_node", "question_generation_node")
 graph.add_conditional_edges("question_generation_node", interview_tools_condition)
 graph.add_edge("tools", "question_generation_node")
 graph.add_edge("answer_collection_node", "evaluation_node")
