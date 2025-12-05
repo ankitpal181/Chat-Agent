@@ -1,0 +1,206 @@
+import uuid, time, json, math, datetime
+from langgraph.types import Command
+import streamlit as st
+from backend.interview_server import interviewbot
+from utilities import set_multi_states, set_state
+
+# Container for Q&A
+q_n_a_container = st.empty()
+
+@st.fragment(run_every=1)
+def render_timer(end_time, total_time, question):
+    remaining = end_time - time.time()
+    if remaining > 0:
+        progress = min(remaining / total_time, 1.0)
+        st.progress(progress, text=f"Time Remaining: {int(remaining)}s")
+        st.caption("Note: Please press Ctrl+Enter to save your draft answer before time runs out.")
+    else:
+        submit_answer(st.session_state.get(question, ""), st.session_state["q&a_config"], True)
+
+def interview_report():
+    with st.spinner(":hourglass: :blue[Loading Data] - :grey[Building PDF Report...] *Please wait patiently* :gear:"):
+        interviewbot.invoke(
+            {"messages": [HumanMessage("Generate a PDF report of the conversion and evaluation of the interview. Keep the evaluation intact and don't try to summarise it")], "phase": "reporting"},
+            st.session_state["q&a_config"]
+        )
+    st.success(":white_check_mark: :green[PDF Report Generated Successfully]")
+
+def render_rules(rules: dict) -> None:
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"Interview format: {rules['format']}")
+            st.write(f"Time frame: {rules['time_frame'] * rules['no_of_questions']} minutes")
+        with col2:
+            st.write(f"Number of questions: {rules['no_of_questions']}")
+            st.write(f"Question duration: {rules['time_frame']} minutes")
+
+def render_verdict(data: dict, level: int = 0) -> None:
+    for key, value in data.items():
+        formatted_key = key.replace("_", " ").title()
+        
+        if isinstance(value, str):
+            if key == "rating":
+                color = "green" if "good" in value.lower() else "red" if "bad" in value.lower() else "orange"
+                st.markdown(f"**{formatted_key}:** :{color}[{value}]")
+            else:
+                st.markdown(f"**{formatted_key}:** {value}")
+                
+        elif isinstance(value, list):
+            st.markdown(f"**{formatted_key}:**")
+            for index, item in enumerate(value, 1):
+                if isinstance(item, dict):
+                    with st.expander(f"Item {index}"):
+                        render_verdict(item, level + 1)
+                else:
+                    st.write(f"{index}. {item}")
+                    
+        elif isinstance(value, dict):
+            st.markdown(f"**{formatted_key}:**")
+            render_verdict(value, level + 1)
+
+def start_interview(candidate_name: str, candidate_desired_role: str, candidate_preferred_companies: str) -> None:
+    if not candidate_name or not candidate_desired_role:
+        st.error("Candidate name and desired role are required")
+        return
+
+    set_multi_states({
+        "candidate_info": {
+            "name": candidate_name,
+            "desired_role": candidate_desired_role,
+            "preferred_companies": candidate_preferred_companies
+        },
+        "interview_status": "q&a"
+    })
+
+def submit_answer(answer: str, config: dict, rerun: bool = False) -> None:
+    with st.spinner("Submitting Answer..."):
+        bot_response = interviewbot.invoke(Command(resume=answer), config)
+    st.session_state["bot_response"] = bot_response
+    if "clock_ends_at" in st.session_state:
+        del st.session_state["clock_ends_at"]
+    if rerun: st.rerun()
+
+def render_format_selection():
+    q_n_a_container.empty()
+    with q_n_a_container.container():
+        st.title("Interview AI")
+        st.subheader("Select Interview Format")
+        st.button(
+            "Short Format Interview",
+            help="5 questions interview with 1 min each question",
+            on_click=set_multi_states,
+            args=[{
+                "format": "short",
+                "interview_status": "information-collection"
+            }]
+        )
+        st.button(
+            "Long Format Interview",
+            help="5 questions interview with 10 min each question",
+            on_click=set_multi_states,
+            args=[{
+                "format": "long",
+                "interview_status": "information-collection"
+            }]
+        )
+
+def render_candidate_info():
+    q_n_a_container.empty()
+    with q_n_a_container.container():
+        st.title("Interview AI")
+        st.subheader("Candidate Information")
+        candidate_name = st.text_input(
+            "Full Name :blue[(required)]"
+        )
+        candidate_desired_role =  st.text_input(
+            "Desired Job Role :blue[(required)]"
+        )
+        candidate_preferred_companies = st.text_input(
+            "Preferred Companies :blue[(optional - comma separated names)]"
+        )
+        st.button("Start Interview", on_click=start_interview, args=(
+            candidate_name, candidate_desired_role, candidate_preferred_companies
+        ))
+
+def render_q_n_a():
+    q_n_a_container.empty()
+    
+    # Initialize Interview if needed
+    if "q&a_config" not in st.session_state:
+        with st.spinner("Loading Question..."):
+            st.session_state["q&a_config"] = {"configurable": {"thread_id": str(uuid.uuid4())}}
+            st.session_state["bot_response"] = interviewbot.invoke({
+                "messages": [{"role": "user", "content": "Start Interview"}],
+                "phase": "execution",
+                "rules": {"format": st.session_state["format"]}
+            }, st.session_state["q&a_config"])
+
+    # Process Interrupts
+    if st.session_state.get("bot_response") and "__interrupt__" in st.session_state["bot_response"]:
+        config = st.session_state["q&a_config"]
+        bot_response = st.session_state["bot_response"]
+        interrupt_message = bot_response['__interrupt__'][0].value
+
+        if isinstance(interrupt_message, str):
+            # Auto-fill info logic
+            if "full name" in interrupt_message.lower():
+                with st.spinner("Loading Question..."):
+                    bot_response = interviewbot.invoke(
+                        Command(resume=st.session_state["candidate_info"]["name"]), config
+                    )
+            elif "job role" in interrupt_message.lower():
+                with st.spinner("Loading Question..."):
+                    bot_response = interviewbot.invoke(
+                        Command(resume=st.session_state["candidate_info"]["desired_role"]), config
+                    )
+            elif "names of companies" in interrupt_message.lower():
+                with st.spinner("Loading Question..."):
+                    bot_response = interviewbot.invoke(
+                        Command(resume=st.session_state["candidate_info"]["preferred_companies"]), config
+                    )
+            
+            st.session_state["bot_response"] = bot_response
+            st.rerun()
+        else:
+            # Question Phase
+            if "clock_ends_at" not in st.session_state:
+                time_limit = bot_response.get("rules", {}).get("time_frame", 1) * 60
+                st.session_state["clock_ends_at"] = time.time() + time_limit
+
+            with q_n_a_container.container():
+                st.title("Interview AI")
+                render_rules(bot_response["rules"])
+                
+                total_time = bot_response["rules"]["time_frame"] * 60
+                render_timer(
+                    st.session_state["clock_ends_at"],
+                    total_time,
+                    interrupt_message.question
+                )
+                
+                st.write(f"**Question:** {interrupt_message.question}")
+                st.caption(f"Asked by: {interrupt_message.companies} | Type: {interrupt_message.type}")
+                
+                answer = st.text_area("Answer:", key=interrupt_message.question, placeholder="Write your answer here...")
+
+                st.button("Submit Answer", key=f"btn_{interrupt_message.question}", on_click=submit_answer, args=(answer, config,))
+                
+    else:
+        # No interrupt means interview is done
+        set_state("interview_status", "evaluation")
+        st.rerun()
+
+def render_evaluation():
+    q_n_a_container.empty()
+    if "bot_response" in st.session_state and st.session_state["bot_response"]["messages"]:
+        last_msg = st.session_state["bot_response"]["messages"][-1]
+        if hasattr(last_msg, "content"):
+            try:
+                evaluation = json.loads(last_msg.content)
+                with q_n_a_container.container():
+                    st.title("Interview AI")
+                    st.subheader("Evaluation")
+                    render_verdict(evaluation)
+            except json.JSONDecodeError:
+                st.error("Failed to parse evaluation data.")

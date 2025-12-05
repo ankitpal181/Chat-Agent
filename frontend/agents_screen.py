@@ -8,14 +8,18 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import streamlit as st
 from chat_screen import render_chat
 from news_screen import render_news
+from interview_screen import render_interview
+from interview_layout import interview_report
 from backend.chat_server import chatbot
 from backend.news_server import newsbot
-from utilities import set_state, publish_messages, clear_chat_history
-
+from backend.interview_server import interviewbot
+from utilities import set_state, publish_messages, clear_chat_history, set_multi_states
+from langchain_core.messages import HumanMessage
 
 # States and Options
 screen = st.session_state.get("screen", "chatbot")
 segment = st.session_state.get("segment", "headlines")
+interview_status = st.session_state.get("interview_status", "format-selection")
 
 with st.sidebar:
     st.button("Chat", width="stretch", on_click=set_state, args=("screen", "chatbot"))
@@ -55,6 +59,18 @@ with st.sidebar:
             on_click=publish_messages,
             args=(chatbot, True, "assistant", "Generate a csv with all the data")
         )
+    elif screen == "interviewbot":
+        if interview_status == "evaluation":
+            st.button("New Interview", width="stretch", on_click=set_multi_states, args=[{
+                "interview_status": "format-selection",
+                "interview_thread_id": None,
+                "candidate_info": None,
+                "bot_response": None,
+                "clock_ends_at": None,
+                "q&a_config": None,
+                "format": None,
+            }])
+            st.button("Create PDF Report", width="stretch", on_click=interview_report)
 
 
 # Flow
@@ -62,5 +78,7 @@ if screen == "chatbot":
     render_chat()
 elif screen == "newsbot":
     render_news()
+elif screen == "interviewbot":
+    render_interview()
 else:
-    pass
+    st.error("Invalid screen")

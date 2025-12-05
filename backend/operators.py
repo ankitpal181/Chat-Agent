@@ -9,6 +9,12 @@ from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.types import interrupt
 
+# Temporary Rules Map
+rules_map = {
+    "short": {"format": "short", "time_frame": 1, "no_of_questions": 5},
+    "long": {"format": "long", "time_frame": 10, "no_of_questions": 5}
+}
+
 
 # NewsBot AI instances
 reporter_model = Model(HeadlinesSchema)
@@ -97,6 +103,7 @@ def custom_tool_node(state: QueryState) -> dict:
 
 # InterviewBot Functions
 def candidate_information_collection_function(state: InterviewState) -> dict:
+    if state.get("phase") == "reporting": return state
     user_name = interrupt("Please enter your full name")
     user_desired_role = interrupt("Job role you want to interview for")
     user_preferred_companies = interrupt("Please enter comma separated names of companies you prefer")
@@ -134,16 +141,17 @@ def evaluation_function(state: InterviewState) -> dict:
 
 def interview_perception_function(state: InterviewState) -> dict:
     messages = state["messages"]
-    rules = state.get("rules", {})
+    rules = rules_map.get(state["rules"]["format"], {"format": "short", "time_frame": 1, "no_of_questions": 5})
     user_information = json.loads(messages[1].content)
     system_prompt = SystemMessage(INTERVIEWBOT_PROMPT.format(
         role=user_information["role"],
         companies=user_information["companies"],
-        time_frame=rules.get("time_frame", "1 minute"),
-        no_of_questions=rules.get("no_of_questions", "5")
+        time_frame=rules.get("time_frame"),
+        no_of_questions=rules.get("no_of_questions")
     ))
 
     if system_prompt: state["messages"].insert(0, system_prompt)
+    state["rules"] = rules
 
     return state
 

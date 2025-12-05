@@ -1,6 +1,6 @@
 import streamlit as st
 from backend.news_server import newsbot
-from .news_layouts import render_headlines, render_stories, render_summary
+from news_layouts import render_headlines, render_stories, render_summary
 
 
 def render_news():

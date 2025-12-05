@@ -1,7 +1,7 @@
 import json
 import streamlit as st
 from langchain_core.messages import HumanMessage
-from .utilities import load_messages, publish_messages, set_multi_states, add_remove_state, set_state
+from utilities import load_messages, publish_messages, set_multi_states, add_remove_state, set_state
 
 
 def render_headlines(newsbot):
