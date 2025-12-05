@@ -1,4 +1,6 @@
 import streamlit as st
+import json
+from langchain_core.messages import HumanMessage
 from langgraph.types import Command
 from backend.interview_server import interviewbot
 from frontend.interview_layout import (
@@ -9,30 +11,33 @@ from frontend.interview_layout import (
 )
 
 # Load session state on refresh
-if "format" not in st.session_state:
-    for checkpointer in interviewbot.checkpointer.list():
-        interview_thread_id = checkpointer.config["configurable"]["thread_id"]
-        state_values = interviewbot.get_state(
-            config=checkpointer.config["configurable"]
-        ).values
-        messages = state_values["messages"]
+try:
+    if "format" not in st.session_state:
+        for checkpointer in interviewbot.checkpointer.list():
+            interview_thread_id = checkpointer.config["configurable"]["thread_id"]
+            state_values = interviewbot.get_state(
+                config=checkpointer.config["configurable"]
+            ).values
+            messages = state_values["messages"]
 
-        for message in messages:
-            if isinstance(message, HumanMessage) and (
-                "name" in message.content and
-                "role" in message.content and
-                "companies" in message.content
-            ):
-                st.session_state["candidate_info"] = json.loads(message.content)
-                break
-        
-        st.session_state["interview_status"] = state_values.get("phase", "format-selection")
-        st.session_state["q&a_config"] = checkpointer.config["configurable"]
-        st.session_state["format"] = state_values["rules"]["format"]
-        st.session_state["bot_response"] = interviewbot.invoke(
-            Command(resume=""), st.session_state["q&a_config"]
-        )
-        break
+            for message in messages:
+                if isinstance(message, HumanMessage) and (
+                    "name" in message.content and
+                    "role" in message.content and
+                    "companies" in message.content
+                ):
+                    st.session_state["candidate_info"] = json.loads(message.content)
+                    break
+            
+            st.session_state["interview_status"] = state_values.get("phase", "format-selection")
+            st.session_state["q&a_config"] = checkpointer.config["configurable"]
+            st.session_state["format"] = state_values["rules"]["format"]
+            st.session_state["bot_response"] = interviewbot.invoke(
+                Command(resume=""), st.session_state["q&a_config"]
+            )
+            break
+except:
+    st.write("Failed to load session state")
 
 
 def render_interview():
