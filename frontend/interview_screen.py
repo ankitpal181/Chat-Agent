@@ -26,7 +26,7 @@ if "format" not in st.session_state:
                 st.session_state["candidate_info"] = json.loads(message.content)
                 break
         
-        st.session_state["interview_status"] = state_values["phase"]
+        st.session_state["interview_status"] = state_values.get("phase", "format-selection")
         st.session_state["q&a_config"] = checkpointer.config["configurable"]
         st.session_state["format"] = state_values["rules"]["format"]
         st.session_state["bot_response"] = interviewbot.invoke(

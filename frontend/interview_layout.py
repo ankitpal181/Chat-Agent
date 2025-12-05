@@ -128,7 +128,7 @@ def render_q_n_a():
             st.session_state["q&a_config"] = {"configurable": {"thread_id": str(uuid.uuid4())}}
             st.session_state["bot_response"] = interviewbot.invoke({
                 "messages": [{"role": "user", "content": "Start Interview"}],
-                "phase": "execution",
+                "phase": "q&a",
                 "rules": {"format": st.session_state["format"]}
             }, st.session_state["q&a_config"])
 
