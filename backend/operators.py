@@ -156,8 +156,8 @@ def interview_perception_function(state: InterviewState) -> dict:
     return state
 
 def phase_router_function(state: InterviewState) -> str:
-    if state.get("phase") == "execution": return "perception_node"
-    else: return "reporting_node"
+    if state.get("phase") == "reporting": return "reporting_node"
+    else: return "perception_node"
 
 def reporting_function(state: InterviewState) -> dict:
     messages = state["messages"]

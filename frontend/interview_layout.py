@@ -1,8 +1,8 @@
-import uuid, time, json, math, datetime
+import uuid, time, json
 from langgraph.types import Command
 import streamlit as st
 from backend.interview_server import interviewbot
-from utilities import set_multi_states, set_state
+from utilities import set_multi_states, set_state, _render_tool_message
 
 # Container for Q&A
 q_n_a_container = st.empty()
@@ -19,10 +19,11 @@ def render_timer(end_time, total_time, question):
 
 def interview_report():
     with st.spinner(":hourglass: :blue[Loading Data] - :grey[Building PDF Report...] *Please wait patiently* :gear:"):
-        interviewbot.invoke(
+        report_response = interviewbot.invoke(
             {"messages": [HumanMessage("Generate a PDF report of the conversion and evaluation of the interview. Keep the evaluation intact and don't try to summarise it")], "phase": "reporting"},
             st.session_state["q&a_config"]
         )
+        _render_tool_message(json.loads(report_response["messages"][-2].content.replace("'", '"')), 1)
     st.success(":white_check_mark: :green[PDF Report Generated Successfully]")
 
 def render_rules(rules: dict) -> None:
@@ -40,23 +41,18 @@ def render_verdict(data: dict, level: int = 0) -> None:
         formatted_key = key.replace("_", " ").title()
         
         if isinstance(value, str):
-            if key == "rating":
-                color = "green" if "good" in value.lower() else "red" if "bad" in value.lower() else "orange"
-                st.markdown(f"**{formatted_key}:** :{color}[{value}]")
-            else:
-                st.markdown(f"**{formatted_key}:** {value}")
+            st.write(f"**{formatted_key}:** {value}")
                 
         elif isinstance(value, list):
-            st.markdown(f"**{formatted_key}:**")
+            st.write(f"**{formatted_key}:**")
             for index, item in enumerate(value, 1):
                 if isinstance(item, dict):
-                    with st.expander(f"Item {index}"):
-                        render_verdict(item, level + 1)
+                    st.write(f"{index}. ")
+                    render_verdict(item, level + 1)
                 else:
                     st.write(f"{index}. {item}")
-                    
         elif isinstance(value, dict):
-            st.markdown(f"**{formatted_key}:**")
+            st.write(f"**{formatted_key}:**")
             render_verdict(value, level + 1)
 
 def start_interview(candidate_name: str, candidate_desired_role: str, candidate_preferred_companies: str) -> None:

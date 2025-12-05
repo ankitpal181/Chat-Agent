@@ -1,10 +1,39 @@
 import streamlit as st
+from langgraph.types import Command
+from backend.interview_server import interviewbot
 from frontend.interview_layout import (
     render_format_selection,
     render_candidate_info,
     render_q_n_a,
     render_evaluation
 )
+
+# Load session state on refresh
+if "format" not in st.session_state:
+    for checkpointer in interviewbot.checkpointer.list():
+        interview_thread_id = checkpointer.config["configurable"]["thread_id"]
+        state_values = interviewbot.get_state(
+            config=checkpointer.config["configurable"]
+        ).values
+        messages = state_values["messages"]
+
+        for message in messages:
+            if isinstance(message, HumanMessage) and (
+                "name" in message.content and
+                "role" in message.content and
+                "companies" in message.content
+            ):
+                st.session_state["candidate_info"] = json.loads(message.content)
+                break
+        
+        st.session_state["interview_status"] = state_values["phase"]
+        st.session_state["q&a_config"] = checkpointer.config["configurable"]
+        st.session_state["format"] = state_values["rules"]["format"]
+        st.session_state["bot_response"] = interviewbot.invoke(
+            Command(resume=""), st.session_state["q&a_config"]
+        )
+        break
+
 
 def render_interview():
     interview_status = st.session_state.get("interview_status", "format-selection")

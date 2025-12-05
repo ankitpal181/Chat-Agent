@@ -63,7 +63,6 @@ with st.sidebar:
         if interview_status == "evaluation":
             st.button("New Interview", width="stretch", on_click=set_multi_states, args=[{
                 "interview_status": "format-selection",
-                "interview_thread_id": None,
                 "candidate_info": None,
                 "bot_response": None,
                 "clock_ends_at": None,
