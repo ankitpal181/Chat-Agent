@@ -9,16 +9,20 @@ from frontend.interview_layout import (
     render_q_n_a,
     render_evaluation
 )
+from utilities import convert_state_snapshot
 
 def restore_session_state():
     # Load session state on refresh
     try:
-        if "format" not in st.session_state:
-            for checkpointer in interviewbot.checkpointer.list():
-                interview_thread_id = checkpointer.config["configurable"]["thread_id"]
-                state_values = interviewbot.get_state(
-                    config=checkpointer.config["configurable"]
-                ).values
+        interview_thread_id = st.query_params.get("thread_id")
+        if interview_thread_id and "format" not in st.session_state:
+            with st.spinner("Restoring Session State..."):
+                st.session_state["q&a_config"] = {"configurable": {"thread_id": interview_thread_id}}
+                snapshot = interviewbot.get_state(
+                    config=st.session_state["q&a_config"]
+                )
+                state_values = convert_state_snapshot(snapshot)
+                
                 messages = state_values["messages"]
 
                 for message in messages:
@@ -31,7 +35,6 @@ def restore_session_state():
                         break
                 
                 st.session_state["interview_status"] = state_values.get("phase", "format-selection")
-                st.session_state["q&a_config"] = checkpointer.config["configurable"]
                 st.session_state["format"] = state_values["rules"]["format"]
 
                 if "__interrupt__" in state_values:
@@ -40,13 +43,12 @@ def restore_session_state():
                     )
                 else:
                     st.session_state["bot_response"] = state_values
-                break
-    except:
+    except Exception as ex:
         st.write("Failed to load session state")
 
 
 def render_interview():
-    # restore_session_state()
+    restore_session_state()
     interview_status = st.session_state.get("interview_status", "format-selection")
 
     if interview_status == "format-selection":

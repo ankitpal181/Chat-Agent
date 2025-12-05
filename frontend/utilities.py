@@ -3,9 +3,20 @@ import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
 
+from typing import Any
+
 # ============================================================================
 # State Management Utilities
 # ============================================================================
+
+def convert_state_snapshot(snapshot: Any) -> dict:
+    """
+    Convert a StateSnapshot object to a dictionary with interrupts.
+    """
+    state_dict = snapshot.values.copy()
+    if hasattr(snapshot, "interrupts") and snapshot.interrupts:
+        state_dict["__interrupt__"] = snapshot.interrupts
+    return state_dict
 
 def set_multi_states(state_data: dict):
     """Update multiple session state values at once."""

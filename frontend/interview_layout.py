@@ -18,6 +18,15 @@ def render_timer(end_time, total_time, question):
     else:
         submit_answer(st.session_state.get(question, ""), st.session_state["q&a_config"], True)
 
+def start_new_interview():
+    st.query_params.clear()
+    st.session_state["interview_status"] = "format-selection"
+    del st.session_state["candidate_info"]
+    del st.session_state["bot_response"]
+    if "clock_ends_at" in st.session_state: del st.session_state["clock_ends_at"]
+    del st.session_state["q&a_config"]
+    del st.session_state["format"]
+
 def interview_report():
     with st.spinner(":hourglass: :blue[Loading Data] - :grey[Building PDF Report...] *Please wait patiently* :gear:"):
         report_response = interviewbot.invoke(
@@ -48,7 +57,6 @@ def render_verdict(data: dict, level: int = 0) -> None:
             st.write(f"**{formatted_key}:**")
             for index, item in enumerate(value, 1):
                 if isinstance(item, dict):
-                    st.write(f"{index}. ")
                     render_verdict(item, level + 1)
                 else:
                     st.write(f"{index}. {item}")
@@ -126,7 +134,9 @@ def render_q_n_a():
     # Initialize Interview if needed
     if "q&a_config" not in st.session_state:
         with st.spinner("Loading Question..."):
-            st.session_state["q&a_config"] = {"configurable": {"thread_id": str(uuid.uuid4())}}
+            interview_thread_id = str(uuid.uuid4())
+            st.session_state["q&a_config"] = {"configurable": {"thread_id": interview_thread_id}}
+            st.query_params["thread_id"] = interview_thread_id
             st.session_state["bot_response"] = interviewbot.invoke({
                 "messages": [{"role": "user", "content": "Start Interview"}],
                 "phase": "q&a",
@@ -182,7 +192,7 @@ def render_q_n_a():
                 answer = st.text_area("Answer:", key=interrupt_message.question, placeholder="Write your answer here...")
 
                 st.button("Submit Answer", key=f"btn_{interrupt_message.question}", on_click=submit_answer, args=(answer, config,))
-                
+                st.caption("Note: Please do not refresh the page while answering question as it will auto-submit your current answer with empty text value.")
     else:
         # No interrupt means interview is done
         set_state("interview_status", "evaluation")

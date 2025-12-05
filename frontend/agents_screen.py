@@ -9,7 +9,7 @@ import streamlit as st
 from chat_screen import render_chat
 from news_screen import render_news
 from interview_screen import render_interview
-from interview_layout import interview_report
+from interview_layout import interview_report, start_new_interview
 from backend.chat_server import chatbot
 from backend.news_server import newsbot
 from backend.interview_server import interviewbot
@@ -61,14 +61,7 @@ with st.sidebar:
         )
     elif screen == "interviewbot":
         if interview_status == "evaluation":
-            st.button("New Interview", width="stretch", on_click=set_multi_states, args=[{
-                "interview_status": "format-selection",
-                "candidate_info": None,
-                "bot_response": None,
-                "clock_ends_at": None,
-                "q&a_config": None,
-                "format": None,
-            }])
+            st.button("New Interview", width="stretch", on_click=start_new_interview)
             st.button("Create PDF Report", width="stretch", on_click=interview_report)
 
 
