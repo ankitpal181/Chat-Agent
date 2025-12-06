@@ -30,6 +30,7 @@ The project is designed to be modular and extensible, featuring a unified interf
 *   **Comprehensive Evaluation**: Provides detailed feedback, ratings, and performance metrics (Confidence, Clarity) for every answer.
 *   **Session Restoration**: automatically restores previous sessions on refresh using URL parameters.
 *   **PDF Reports**: Generates detailed interview performance reports.
+*   **Customizable Formats (RAG)**: Easily define or modify interview structures via a simple JSON configuration file.
 
 ## 📦 Installation and Setup
 
@@ -102,7 +103,23 @@ streamlit run frontend/agents_screen.py
 Once the application starts, your browser will open the Streamlit interface. Use the **Sidebar** to navigate between:
 *   **Chat**: The general assistant.
 *   **News**: The news aggregator and analyzer.
-*   **Interview**: (Under Development).
+*   **Interview**: Simulated interview mode.
+
+## � Customization
+
+### Adding New Interview Formats (RAG)
+The Interview Bot uses a RAG-based approach to retrieve interview rules from a JSON knowledge base. You can add new formats without modifying the codebase:
+
+1.  Open `backend/data/interview_rules.json`.
+2.  Add a new format entry:
+    ```json
+    "executive": {
+        "format": "executive",
+        "time_frame": 15, # time limit for each question in minutes
+        "no_of_questions": 3 # number of questions to ask
+    }
+    ```
+3.  **Note**: You will also need to add a corresponding button in the UI (`frontend/interview_layout.py`) to trigger this new format.
 
 ## 📂 Project Structure
 

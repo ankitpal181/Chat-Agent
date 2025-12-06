@@ -9,7 +9,7 @@ from frontend.interview_layout import (
     render_q_n_a,
     render_evaluation
 )
-from utilities import convert_state_snapshot
+from utilities import convert_state_snapshot, stop_audio_recording
 
 def restore_session_state():
     # Load session state on refresh
@@ -38,6 +38,7 @@ def restore_session_state():
                 st.session_state["format"] = state_values["rules"]["format"]
 
                 if "__interrupt__" in state_values:
+                    stop_audio_recording()
                     st.session_state["bot_response"] = interviewbot.invoke(
                         Command(resume=""), st.session_state["q&a_config"]
                     )

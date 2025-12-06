@@ -1,0 +1,17 @@
+{
+    "comments": {
+        "format": "name that will be displayed at the frontend screen and used for lookups",
+        "time_frame": "time limit for each question in minutes",
+        "no_of_questions": "number of questions to ask"
+    },
+    "short": {
+        "format": "short",
+        "time_frame": 1,
+        "no_of_questions": 5
+    },
+    "long": {
+        "format": "long",
+        "time_frame": 10,
+        "no_of_questions": 5
+    }
+}

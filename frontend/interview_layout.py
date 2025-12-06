@@ -3,6 +3,7 @@ from langgraph.types import Command
 from langchain_core.messages import HumanMessage
 import streamlit as st
 from backend.interview_server import interviewbot
+from backend.utilities import load_interview_rules
 from utilities import set_multi_states, set_state, _render_tool_message, read_message_text_aloud, record_audio_messages, stop_audio_recording
 
 # Container for Q&A
@@ -91,28 +92,28 @@ def submit_answer(
     if rerun: st.rerun()
 
 def render_format_selection():
+    interview_rules = load_interview_rules()
+    interview_formats = interview_rules.keys()
+
     q_n_a_container.empty()
     with q_n_a_container.container():
         st.title("Interview AI")
         st.subheader("Select Interview Format")
-        st.button(
-            "Short Format Interview",
-            help="5 questions interview with 1 min each question",
-            on_click=set_multi_states,
-            args=[{
-                "format": "short",
-                "interview_status": "information-collection"
-            }]
-        )
-        st.button(
-            "Long Format Interview",
-            help="5 questions interview with 10 min each question",
-            on_click=set_multi_states,
-            args=[{
-                "format": "long",
-                "interview_status": "information-collection"
-            }]
-        )
+
+        for format in interview_formats:
+            if format == "comments": continue
+
+            no_of_questions = interview_rules[format]["no_of_questions"]
+            time_frame = interview_rules[format]["time_frame"]
+            st.button(
+                f"{format.title()} Format Interview",
+                help=f"{no_of_questions} questions interview with {time_frame} minute/minutes each question",
+                on_click=set_multi_states,
+                args=[{
+                    "format": format,
+                    "interview_status": "information-collection"
+                }]
+            )
 
 def render_candidate_info():
     q_n_a_container.empty()

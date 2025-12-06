@@ -1,3 +1,4 @@
+import os, json
 from dotenv import load_dotenv
 from .schemas import QueryState, InterviewState
 
@@ -56,3 +57,11 @@ def interview_tools_condition(state: InterviewState, messages_key: str = "messag
     
     return "answer_collection_node"
 
+def load_interview_rules() -> dict:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(BASE_DIR, "data", "interview_rules.json")
+
+    with open(json_path, "r") as file:
+        interview_rules = json.load(file)
+    
+    return interview_rules

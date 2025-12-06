@@ -3,3 +3,4 @@ chatbot.db*
 __pycache__
 *.pdf
 *.csv
+*.mp3

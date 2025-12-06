@@ -4,16 +4,11 @@ from .schemas import (
     HeadlinesSchema, StoriesSchema, QueryState, InterviewState, QuestionsSchema, EvaluationSchema
 )
 from .prompts import NEWSBOT_ANCHOR_PROMPT, NEWSBOT_JOURNALIST_PROMPT, NEWSBOT_REPORTER_PROMPT, INTERVIEWBOT_PROMPT
+from .utilities import load_interview_rules
 from langchain_core.messages import AIMessage, SystemMessage, ToolMessage, HumanMessage, RemoveMessage
 from langgraph.prebuilt import ToolNode
 from langgraph.graph.message import REMOVE_ALL_MESSAGES
 from langgraph.types import interrupt
-
-# Temporary Rules Map
-rules_map = {
-    "short": {"format": "short", "time_frame": 1, "no_of_questions": 5},
-    "long": {"format": "long", "time_frame": 10, "no_of_questions": 5}
-}
 
 
 # NewsBot AI instances
@@ -141,7 +136,11 @@ def evaluation_function(state: InterviewState) -> dict:
 
 def interview_perception_function(state: InterviewState) -> dict:
     messages = state["messages"]
-    rules = rules_map.get(state["rules"]["format"], {"format": "short", "time_frame": 1, "no_of_questions": 5})
+    interview_rules = load_interview_rules()
+    rules = interview_rules.get(
+        state["rules"]["format"],
+        {"format": "short", "time_frame": 1, "no_of_questions": 5}
+    )
     user_information = json.loads(messages[1].content)
     system_prompt = SystemMessage(INTERVIEWBOT_PROMPT.format(
         role=user_information["role"],
