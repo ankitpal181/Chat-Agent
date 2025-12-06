@@ -7,7 +7,7 @@
 The project is designed to be modular and extensible, featuring a unified interface to switch between different "agents":
 *   **Chatbot**: A general-purpose assistant with web search and file generation capabilities.
 *   **Newsbot**: A specialized agent for fetching headlines, analyzing news stories, and generating reports.
-*   **Interview Bot**: (Coming Soon) A module for simulated interview experiences.
+*   **Interview Bot**: A specialized module for simulated job interviews with real-time feedback and evaluation.
 
 ## ✨ Core Features
 
@@ -22,6 +22,14 @@ The project is designed to be modular and extensible, featuring a unified interf
 *   **Deep Dive Analysis**: Select a headline to find related articles and see a side-by-side comparison.
 *   **Summarization**: Generates comprehensive summaries from multiple sources.
 *   **Report Generation**: Create PDF or CSV reports of the news data directly from the UI.
+
+### 3. Interview Bot Module
+*   **Role-Based Simulation**: Conducts tailored interviews based on user role, company preferences, and selected format (Short/Long).
+*   **Audio Integration**: Features built-in audio recording for answers, allowing users to speak naturally.
+*   **Real-Time Timer**: Enforces time limits for each question to simulate real interview pressure.
+*   **Comprehensive Evaluation**: Provides detailed feedback, ratings, and performance metrics (Confidence, Clarity) for every answer.
+*   **Session Restoration**: automatically restores previous sessions on refresh using URL parameters.
+*   **PDF Reports**: Generates detailed interview performance reports.
 
 ## 📦 Installation and Setup
 
@@ -102,9 +110,12 @@ Once the application starts, your browser will open the Streamlit interface. Use
     *   `agents_screen.py`: Main entry point handling navigation.
     *   `chat_screen.py`: UI logic for the Chatbot.
     *   `news_screen.py`: UI logic for the Newsbot.
+    *   `interview_screen.py`: Orchestrator for the Interview Bot.
+    *   `interview_layout.py`: Rendering and audio logic for the Interview Bot.
 *   `backend/`: Contains the core logic.
     *   `chat_server.py`: Logic for the Chatbot.
     *   `news_server.py`: Graph definition and assembly for the Newsbot.
+    *   `interview_server.py`: Graph definition for the Interview Bot.
     *   `operators.py`: Core logic functions (Nodes) for the Newsbot.
     *   `utilities.py`: Planning and routing logic (Edges) for the Newsbot.
     *   `schemas.py`: Data models and state definitions.
