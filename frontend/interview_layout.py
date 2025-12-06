@@ -3,7 +3,7 @@ from langgraph.types import Command
 from langchain_core.messages import HumanMessage
 import streamlit as st
 from backend.interview_server import interviewbot
-from utilities import set_multi_states, set_state, _render_tool_message
+from utilities import set_multi_states, set_state, _render_tool_message, read_message_text_aloud, record_audio_messages, stop_audio_recording
 
 # Container for Q&A
 q_n_a_container = st.empty()
@@ -16,7 +16,7 @@ def render_timer(end_time, total_time, question):
         st.progress(progress, text=f"Time Remaining: {int(remaining)}s")
         st.caption("Note: Please press Ctrl+Enter to save your draft answer before time runs out.")
     else:
-        submit_answer(st.session_state.get(question, ""), st.session_state["q&a_config"], True)
+        submit_answer(st.session_state["q&a_config"], question, True)
 
 def start_new_interview():
     st.query_params.clear()
@@ -78,8 +78,12 @@ def start_interview(candidate_name: str, candidate_desired_role: str, candidate_
         "interview_status": "q&a"
     })
 
-def submit_answer(answer: str, config: dict, rerun: bool = False) -> None:
+def submit_answer(
+    config: dict, question: str, rerun: bool = False
+) -> None:
     with st.spinner("Submitting Answer..."):
+        stop_audio_recording()
+        answer = st.session_state.get(question, "")
         bot_response = interviewbot.invoke(Command(resume=answer), config)
     st.session_state["bot_response"] = bot_response
     if "clock_ends_at" in st.session_state:
@@ -171,28 +175,31 @@ def render_q_n_a():
             st.rerun()
         else:
             # Question Phase
-            if "clock_ends_at" not in st.session_state:
-                time_limit = bot_response.get("rules", {}).get("time_frame", 1) * 60
-                st.session_state["clock_ends_at"] = time.time() + time_limit
-
             with q_n_a_container.container():
                 st.title("Interview AI")
                 render_rules(bot_response["rules"])
                 
+                st.write(f"**Question:** {interrupt_message.question}")
+                st.caption(f"Asked by: {interrupt_message.companies} | Type: {interrupt_message.type}")
+                
+                if interrupt_message.type.lower() == "practical":
+                    answer = st.text_area("Answer:", key=interrupt_message.question, placeholder="Write your answer here...")
+                else: answer = ""
+
+                if "clock_ends_at" not in st.session_state:
+                    read_message_text_aloud(interrupt_message.question)
+                    time_limit = bot_response.get("rules", {}).get("time_frame", 1) * 60
+                    st.session_state["clock_ends_at"] = time.time() + time_limit
+                
+                st.button("Submit Answer", key=f"btn_{interrupt_message.question}", on_click=submit_answer, args=(config, interrupt_message.question))
+                st.caption("Note: Please do not refresh the page while answering question as it will auto-submit your current answer with empty text value.")
+                record_audio_messages(interrupt_message.question)
                 total_time = bot_response["rules"]["time_frame"] * 60
                 render_timer(
                     st.session_state["clock_ends_at"],
                     total_time,
                     interrupt_message.question
                 )
-                
-                st.write(f"**Question:** {interrupt_message.question}")
-                st.caption(f"Asked by: {interrupt_message.companies} | Type: {interrupt_message.type}")
-                
-                answer = st.text_area("Answer:", key=interrupt_message.question, placeholder="Write your answer here...")
-
-                st.button("Submit Answer", key=f"btn_{interrupt_message.question}", on_click=submit_answer, args=(answer, config,))
-                st.caption("Note: Please do not refresh the page while answering question as it will auto-submit your current answer with empty text value.")
     else:
         # No interrupt means interview is done
         set_state("interview_status", "evaluation")

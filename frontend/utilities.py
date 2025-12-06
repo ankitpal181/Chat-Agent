@@ -1,5 +1,8 @@
 import json
 import streamlit as st
+import speech_recognition as sr
+from gtts import gTTS
+from playsound import playsound
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 
 
@@ -66,6 +69,56 @@ def _render_tool_message(tool_data: dict, index: int):
             tool_data["mime"],
             f"{tool_data['label']}-{index}"
         )
+
+def read_message_text_aloud(message: str) -> None:
+    tts = gTTS(text=message, lang='en')
+    tts.save("output.mp3")
+    playsound("output.mp3", block=True)
+
+# Global recorder state
+_recorder_state = {"stopper": None, "text": "", "question": None}
+
+def audio_callback(recognizer, audio):
+    try:
+        text = recognizer.recognize_google(audio)
+        if text:
+            _recorder_state["text"] += " " + text
+    except:
+        pass
+
+def record_audio_messages(question: str) -> None:
+    """Start non-blocking audio recording."""
+    if _recorder_state["stopper"]:
+        st.warning("Already recording!")
+        return
+
+    r = sr.Recognizer()
+    mic = sr.Microphone()
+    
+    with mic as source:
+        st.toast("Adjusting for ambient noise...")
+        r.adjust_for_ambient_noise(source, duration=0.5)
+    
+    # Initialize text with current value to append
+    _recorder_state["text"] = st.session_state.get(question, "")
+    _recorder_state["question"] = question
+    
+    # Start background listening
+    stopper = r.listen_in_background(mic, audio_callback)
+    _recorder_state["stopper"] = stopper
+    st.subheader("Listening... (Speak now)")
+
+def stop_audio_recording():
+    """Stop recording and update session state with full text."""
+    if _recorder_state["stopper"]:
+        _recorder_state["stopper"](wait_for_stop=False)
+        _recorder_state["stopper"] = None
+        
+        q_key = _recorder_state["question"]
+        if q_key:
+            st.session_state[q_key] = st.session_state.get(q_key, "") + "\n\n" + _recorder_state["text"].strip()
+            # _recorder_state["question"] = None # Keep key or clear? Clearing is safer.
+            _recorder_state["question"] = None
 
 
 # ============================================================================
