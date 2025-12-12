@@ -24,12 +24,17 @@ class LocalModel(BaseChatModel):
         super().__init__()
         self.fine_tune = fine_tune
 
+        if torch.backends.mps.is_available():
+            self.DEVICE = torch.device("mps")
+        else:
+            self.DEVICE = torch.device("cpu")
+
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(model, local_files_only=True)
-            self.client = AutoModelForCausalLM.from_pretrained(model, local_files_only=True)
+            self.client = AutoModelForCausalLM.from_pretrained(model, local_files_only=True).to(self.DEVICE)
         except:
             self.tokenizer = AutoTokenizer.from_pretrained(model)
-            self.client = AutoModelForCausalLM.from_pretrained(model)
+            self.client = AutoModelForCausalLM.from_pretrained(model).to(self.DEVICE)
     
     @property
     def _llm_type(self) -> str:
@@ -57,13 +62,17 @@ class LocalModel(BaseChatModel):
             elif message.type == "system":
                 conversation_context += f"System: {message.content}\n"
 
+        tokenized_input = self.tokenizer(conversation_context, return_tensors="pt").to(self.DEVICE)
+
         if self.fine_tune:
-            tokenized_input = self.tokenizer(conversation_context, return_tensors="pt")
-            llm_response = self.client.generate(tokenized_input["input_ids"], max_new_tokens=50, num_return_sequences=1)
+            llm_response = self.client.generate(
+                tokenized_input["input_ids"], max_new_tokens=50, num_return_sequences=1
+            )
         else:
             with torch.no_grad():
-                tokenized_input = self.tokenizer(conversation_context, return_tensors="pt")
-                llm_response = self.client.generate(tokenized_input["input_ids"], max_new_tokens=50, num_return_sequences=1)
+                llm_response = self.client.generate(
+                    tokenized_input["input_ids"], max_new_tokens=50, num_return_sequences=1
+                )
         
         input_length = tokenized_input["input_ids"].shape[1]
         message = self.tokenizer.decode(llm_response[0][input_length:], skip_special_tokens=True)
@@ -73,7 +82,9 @@ class LocalModel(BaseChatModel):
         
         return ChatResult(generations=generated_texts_list)
     
-    def bind_tools(self, tools: Sequence[dict[str, Any] | BaseTool], **kwargs: Any) -> Runnable[LanguageModelInput, AIMessage]:
+    def bind_tools(
+        self, tools: Sequence[dict[str, Any] | BaseTool], **kwargs: Any
+    ) -> Runnable[LanguageModelInput, AIMessage]:
         formatted_tools = [convert_to_openai_tool(tool) for tool in tools]
         return self.bind(tools=formatted_tools, **kwargs)
 
