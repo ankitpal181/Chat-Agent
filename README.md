@@ -16,6 +16,7 @@ The project is designed to be modular and extensible, featuring a unified interf
 *   **Internet Access**: The agent can search the web to provide up-to-date information.
 *   **Dynamic File Generation**: Automatically generates downloadable **PDF** and **CSV** reports upon request.
 *   **Database Integration**: Supports SQLite (default), PostgreSQL, and MongoDB for conversation history.
+*   **Local SLM Support**: Run Small Language Models (SLMs) locally using Hugging Face Transformers for privacy and offline capability.
 
 ### 2. News Bot Module
 *   **Top Headlines**: Fetches top news headlines (defaults to world news).
@@ -81,16 +82,24 @@ sudo apt install libpango-1.0-0 libpangoft2-1.0-0 libgdk-pixbuf-2.0-0 libffi-dev
     *   **LLM Provider**:
         *   **OpenAI**: Set `OPENAI_API_KEY`. (Prioritized if both are present).
         *   **Google Gemini**: Set `GOOGLE_API_KEY`.
-    *   **Model Name**: Set `LLM_MODEL_NAME` (e.g., `gpt-4o-mini`, `gemini-1.5-pro`).
+        *   **Local Model** (New!): Leave **BOTH** `OPENAI_API_KEY` and `GOOGLE_API_KEY` blank. The system will automatically fallback to loading a local model via Hugging Face.
+    *   **Model Name**: Set `LLM_MODEL_NAME` (e.g., `gpt-4o-mini`, `gemini-1.5-pro` for cloud, or a Hugging Face model ID like `TinyLlama/TinyLlama-1.1B-Chat-v1.0` for local).
     *   **Database** (Optional): Set `POSTGRES_CONNECTION_URI` or `MONGODB_CONNECTION_URI` if you want to use an external database instead of the default SQLite.
-    *   **LangSmith Tracing** (Optional):
-        To enable tracing and debugging with LangSmith, uncomment and fill in the following lines in your `.env` file:
-        ```bash
-        LANGCHAIN_API_KEY="<your-langsmith-api-key>"
-        LANGCHAIN_TRACING_V2="true"
-        LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
-        LANGCHAIN_PROJECT="chatbot" # You can name this whatever you like
-        ```
+
+### ⚠️ Local Model Limitations
+While local models offer privacy and offline capabilities, they come with trade-offs compared to large cloud providers (OpenAI/Google):
+*   **Hardware Requirements**: Running models locally requires significant RAM and CPU/GPU resources. Performance depends heavily on your hardware.
+*   **Speed**: Generation speed is generally slower than cloud APIs.
+*   **Feature Support**: Currently, advanced features like **Function Calling (Tool Usage)** and **Structured Output** are **NOT** supported for local models. The agent will behave as a standard chatbot without web search or file generation capabilities when running locally.
+*   **Model Size**: We recommend using "Small Language Models" (SLMs) like TinyLlama or Phi-3 unless you have high-end hardware.
+*   **LangSmith Tracing** (Optional):
+To enable tracing and debugging with LangSmith, uncomment and fill in the following lines in your `.env` file:
+```bash
+LANGCHAIN_API_KEY="<your-langsmith-api-key>"
+LANGCHAIN_TRACING_V2="true"
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+LANGCHAIN_PROJECT="chatbot" # You can name this whatever you like
+```
 
 ## ▶️ How to Run the Application
 

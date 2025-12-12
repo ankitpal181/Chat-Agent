@@ -106,7 +106,7 @@ class Model:
     
     def _set_local_model(self, output_schema: BaseModel) -> LocalModel:
         model = LocalModel(model = os.environ.get("LLM_MODEL_NAME", ""))
-        # model = model.bind_tools(self.tools) #TODO: implement bind_tools method in LocalModel class
+        model = model.bind_tools(self.tools)
 
         if output_schema: model = model.with_structured_output(output_schema)
         return model
