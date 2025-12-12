@@ -4,3 +4,4 @@ __pycache__
 *.pdf
 *.csv
 *.mp3
+.DS_Store
