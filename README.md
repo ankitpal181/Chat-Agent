@@ -125,10 +125,10 @@ The Interview Bot uses a RAG-based approach to retrieve interview rules from a J
     "executive": {
         "format": "executive",
         "time_frame": 15, # time limit for each question in minutes
-        "no_of_questions": 3 # number of questions to ask
+        "no_of_questions": 3, # number of questions to ask
+        "questions_type": "coding" # type of questions to ask (multiple choice, theory, practical, both practical and theory)
     }
     ```
-3.  **Note**: You will also need to add a corresponding button in the UI (`frontend/interview_layout.py`) to trigger this new format.
 
 ## 📂 Project Structure
 

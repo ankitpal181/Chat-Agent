@@ -2,16 +2,25 @@
     "comments": {
         "format": "name that will be displayed at the frontend screen and used for lookups",
         "time_frame": "time limit for each question in minutes",
-        "no_of_questions": "number of questions to ask"
+        "no_of_questions": "number of questions to ask",
+        "questions_type": "type of questions to ask (multiple choice, theory, practical, both practical and theory)"
     },
     "short": {
         "format": "short",
         "time_frame": 1,
-        "no_of_questions": 5
+        "no_of_questions": 5,
+        "questions_type": "both practical and theory"
     },
     "long": {
         "format": "long",
         "time_frame": 10,
-        "no_of_questions": 5
+        "no_of_questions": 5,
+        "questions_type": "both practical and theory"
+    },
+    "coding": {
+        "format": "coding",
+        "time_frame": 30,
+        "no_of_questions": 1,
+        "questions_type": "coding"
     }
 }

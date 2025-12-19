@@ -146,7 +146,8 @@ def interview_perception_function(state: InterviewState) -> dict:
         role=user_information["role"],
         companies=user_information["companies"],
         time_frame=rules.get("time_frame"),
-        no_of_questions=rules.get("no_of_questions")
+        no_of_questions=rules.get("no_of_questions"),
+        questions_type=rules.get("questions_type")
     ))
 
     if system_prompt: state["messages"].insert(0, system_prompt)

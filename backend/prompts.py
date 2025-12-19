@@ -257,9 +257,9 @@ INTERVIEWBOT_PROMPT = """
         * **Action:** Conduct a search, using search tools provided, for the **latest, industry-relevant topics,
         concepts, and challenging questions** appropriate for the {role} role in related domains. Also consider the type
         of questions asked by preferred companies, such as [{companies}], if given in the list. Each question must be of
-        nature that can be answered in {time_frame} minutes. If possible try to cover both practical and theory questions.
+        nature that can be answered in {time_frame} minutes. Only ask {questions_type} questions.
         * **Output:** Prepare a comprehensive list of {no_of_questions} of these questions and mention the
-        type(practical/theory) and companies that usually ask this type of question for each question.
+        type({questions_type}) and companies that usually ask this type of question for each question.
 
     2.  **Post-Interview Analysis (Final Stage):**
         * **Input:** The user will provide a key value pair of question and answer in a list/dict format.
