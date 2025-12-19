@@ -16,7 +16,6 @@ The project is designed to be modular and extensible, featuring a unified interf
 *   **Internet Access**: The agent can search the web to provide up-to-date information.
 *   **Dynamic File Generation**: Automatically generates downloadable **PDF** and **CSV** reports upon request.
 *   **Database Integration**: Supports SQLite (default), PostgreSQL, and MongoDB for conversation history.
-*   **Local SLM Support**: Run Small Language Models (SLMs) locally using Hugging Face Transformers for privacy and offline capability. Now supports **Function Calling (Tool Usage)** and **Structured Output** across all agent modules.
 
 ### 2. News Bot Module
 *   **Top Headlines**: Fetches top news headlines (defaults to world news).
@@ -32,6 +31,8 @@ The project is designed to be modular and extensible, featuring a unified interf
 *   **Session Restoration**: automatically restores previous sessions on refresh using URL parameters.
 *   **PDF Reports**: Generates detailed interview performance reports.
 *   **Customizable Formats (RAG)**: Easily define or modify interview structures via a simple JSON configuration file.
+
+**Local SLM Support**: Run Small Language Models (SLMs) locally using Hugging Face Transformers for privacy and offline capability. Now supports **Function Calling (Tool Usage)** and **Structured Output** across all agent modules.
 
 ## 📦 Installation and Setup
 
